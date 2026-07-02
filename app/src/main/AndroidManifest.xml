@@ -23,9 +23,9 @@
         </activity>
 
         <activity
-            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:name=".ui.screens.mahasiswa.CustomScannerActivity"
             android:screenOrientation="portrait"
-            tools:replace="screenOrientation" />
+            android:theme="@style/Theme.EDisiplin" />
     </application>
 
 </manifest>

@@ -80,6 +80,7 @@ private val ButtonActiveBg = Color(0xFF485885)
 fun AdminLoginScreen(
     onLoginSuccess: () -> Unit,
     onNavigateBack: () -> Unit,
+    onNavigateForgotPassword: () -> Unit,
     viewModel: AdminLoginViewModel = viewModel()
 ) {
     var username by remember { mutableStateOf("") }
@@ -87,11 +88,37 @@ fun AdminLoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val sharedPrefs = remember { context.getSharedPreferences("AuthPrefs", android.content.Context.MODE_PRIVATE) }
+
+    LaunchedEffect(Unit) {
+        if (sharedPrefs.getBoolean("rememberMe", false) && sharedPrefs.getString("role", "") == "admin") {
+            username = sharedPrefs.getString("username", "") ?: ""
+            password = sharedPrefs.getString("password", "") ?: ""
+            rememberMe = true
+        }
+    }
+
     val loginState by viewModel.loginState.collectAsState()
 
     LaunchedEffect(loginState) {
         if (loginState is LoginState.Success) {
             viewModel.resetState()
+            if (rememberMe) {
+                sharedPrefs.edit()
+                    .putBoolean("rememberMe", true)
+                    .putString("role", "admin")
+                    .putString("username", username)
+                    .putString("password", password)
+                    .apply()
+            } else {
+                sharedPrefs.edit()
+                    .remove("rememberMe")
+                    .remove("role")
+                    .remove("username")
+                    .remove("password")
+                    .apply()
+            }
             onLoginSuccess()
         }
     }
@@ -348,7 +375,7 @@ fun AdminLoginScreen(
                             color = TextNavy,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.clickable { /* TODO: Forgot Password */ }
+                            modifier = Modifier.clickable { onNavigateForgotPassword() }
                         )
                     }
                     
@@ -424,6 +451,7 @@ fun AdminLoginScreen(
 fun PreviewAdminLoginScreen() {
     AdminLoginScreen(
         onLoginSuccess = {},
-        onNavigateBack = {}
+        onNavigateBack = {},
+        onNavigateForgotPassword = {}
     )
 }

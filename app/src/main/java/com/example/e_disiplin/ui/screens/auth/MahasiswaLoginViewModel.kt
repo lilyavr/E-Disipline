@@ -21,7 +21,9 @@ class MahasiswaLoginViewModel : ViewModel() {
 
         _loginState.value = LoginState.Loading
         viewModelScope.launch {
-            val success = repository.loginMahasiswa(nim, password)
+            // Hash the entered password before comparing with the stored SHA-256 hash
+            val hashedPassword = hashSha256(password)
+            val success = repository.loginMahasiswa(nim, hashedPassword)
             if (success) {
                 _loginState.value = LoginState.Success
             } else {
@@ -29,6 +31,17 @@ class MahasiswaLoginViewModel : ViewModel() {
             }
         }
     }
+
+    /**
+     * Returns the SHA-256 hex digest of [input].
+     */
+    private fun hashSha256(input: String): String {
+        val bytes = java.security.MessageDigest
+            .getInstance("SHA-256")
+            .digest(input.toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+
 
     fun resetState() {
         _loginState.value = LoginState.Idle

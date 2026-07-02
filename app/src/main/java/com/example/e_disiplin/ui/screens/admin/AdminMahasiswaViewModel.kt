@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_disiplin.data.repository.FirebaseRepository
 import com.example.e_disiplin.domain.model.Mahasiswa
+import com.example.e_disiplin.domain.model.Pelanggaran
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -35,9 +36,33 @@ class AdminMahasiswaViewModel : ViewModel() {
     private val _verifiedMonthCount = MutableStateFlow(0)
     val verifiedMonthCount: StateFlow<Int> = _verifiedMonthCount
 
+    // Full list of mahasiswa for Daftar Mahasiswa screen
+    private val _mahasiswaList = MutableStateFlow<List<Mahasiswa>>(emptyList())
+    val mahasiswaList: StateFlow<List<Mahasiswa>> = _mahasiswaList
+
+    // Selected mahasiswa for detail view
+    private val _selectedMahasiswa = MutableStateFlow<Mahasiswa?>(null)
+    val selectedMahasiswa: StateFlow<Mahasiswa?> = _selectedMahasiswa
+
+    // Pelanggaran for selected mahasiswa (detail view)
+    private val _selectedMahasiswaPelanggaran = MutableStateFlow<List<Pelanggaran>>(emptyList())
+    val selectedMahasiswaPelanggaran: StateFlow<List<Pelanggaran>> = _selectedMahasiswaPelanggaran
+
     init {
         fetchTotalMahasiswa()
         observePelanggaranStats()
+        observeMahasiswaList()
+    }
+
+    private fun observeMahasiswaList() {
+        viewModelScope.launch {
+            repository.getAllMahasiswaFlow()
+                .catch { e -> e.printStackTrace() }
+                .collect { list ->
+                    _mahasiswaList.value = list
+                    _totalMahasiswa.value = list.size.toLong()
+                }
+        }
     }
 
     private fun observePelanggaranStats() {
@@ -83,6 +108,21 @@ class AdminMahasiswaViewModel : ViewModel() {
         }
     }
 
+    fun selectMahasiswa(mahasiswa: Mahasiswa) {
+        _selectedMahasiswa.value = mahasiswa
+        observeSelectedMahasiswaPelanggaran(mahasiswa.nim)
+    }
+
+    private fun observeSelectedMahasiswaPelanggaran(nim: String) {
+        viewModelScope.launch {
+            repository.getPelanggaranByNimFlow(nim)
+                .catch { e -> e.printStackTrace() }
+                .collect { list ->
+                    _selectedMahasiswaPelanggaran.value = list
+                }
+        }
+    }
+
     fun addMahasiswa(nim: String, name: String, email: String, noHp: String, major: String, semester: String, tanggalLahir: String) {
         if (nim.isBlank() || name.isBlank() || email.isBlank() || noHp.isBlank() || major.isBlank() || semester.isBlank() || tanggalLahir.isBlank()) {
             _addState.value = AddMahasiswaState.Error("Semua field harus diisi")
@@ -91,27 +131,40 @@ class AdminMahasiswaViewModel : ViewModel() {
 
         _addState.value = AddMahasiswaState.Loading
         viewModelScope.launch {
-            val password = tanggalLahir
-            
+            // Hash the tanggal lahir string (DDMMYYYY) with SHA-256 as the password
+            val hashedPassword = hashSha256(tanggalLahir)
+
             val mahasiswa = Mahasiswa(
-                nim = nim, 
-                name = name, 
-                email = email, 
-                noHp = noHp, 
-                major = major, 
+                nim = nim,
+                name = name,
+                email = email,
+                noHp = noHp,
+                major = major,
                 semester = semester,
                 tanggalLahir = tanggalLahir,
-                password = password
+                password = hashedPassword
             )
             val success = repository.addMahasiswa(mahasiswa)
             if (success) {
                 _addState.value = AddMahasiswaState.Success
-                fetchTotalMahasiswa() // refresh count
+                fetchTotalMahasiswa()
             } else {
                 _addState.value = AddMahasiswaState.Error("Gagal menyimpan data")
             }
         }
     }
+
+    /**
+     * Returns the SHA-256 hex digest of [input].
+     * Used so the password stored in Firestore is never plain-text.
+     */
+    private fun hashSha256(input: String): String {
+        val bytes = java.security.MessageDigest
+            .getInstance("SHA-256")
+            .digest(input.toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+
 
     fun resetAddState() {
         _addState.value = AddMahasiswaState.Idle

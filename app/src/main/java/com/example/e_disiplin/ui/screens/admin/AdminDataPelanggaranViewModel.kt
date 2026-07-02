@@ -26,7 +26,7 @@ class AdminDataPelanggaranViewModel : ViewModel() {
             repository.getAllPelanggaranFlow()
                 .catch { e -> e.printStackTrace() }
                 .collect { list ->
-                    val formatter = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID"))
+                    val formatter = SimpleDateFormat("dd MMM yyyy", Locale.forLanguageTag("id-ID"))
                     val violationDataList = list.sortedByDescending { it.tanggal }.map { p ->
                         val m = repository.getMahasiswa(p.nimMahasiswa)
                         val name = m?.name ?: "Mahasiswa Tidak Ditemukan"

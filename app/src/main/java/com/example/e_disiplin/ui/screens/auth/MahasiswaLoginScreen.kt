@@ -78,18 +78,45 @@ private val ButtonActiveBg = Color(0xFF485885)
 fun MahasiswaLoginScreen(
     viewModel: MahasiswaLoginViewModel = viewModel(),
     onLoginSuccess: (String) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateForgotPassword: () -> Unit
 ) {
     var nim by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val sharedPrefs = remember { context.getSharedPreferences("AuthPrefs", android.content.Context.MODE_PRIVATE) }
+
+    LaunchedEffect(Unit) {
+        if (sharedPrefs.getBoolean("rememberMe", false) && sharedPrefs.getString("role", "") == "mahasiswa") {
+            nim = sharedPrefs.getString("nim", "") ?: ""
+            password = sharedPrefs.getString("password", "") ?: ""
+            rememberMe = true
+        }
+    }
+
     val loginState by viewModel.loginState.collectAsState()
 
     LaunchedEffect(loginState) {
         if (loginState is LoginState.Success) {
             viewModel.resetState()
+            if (rememberMe) {
+                sharedPrefs.edit()
+                    .putBoolean("rememberMe", true)
+                    .putString("role", "mahasiswa")
+                    .putString("nim", nim)
+                    .putString("password", password)
+                    .apply()
+            } else {
+                sharedPrefs.edit()
+                    .remove("rememberMe")
+                    .remove("role")
+                    .remove("nim")
+                    .remove("password")
+                    .apply()
+            }
             onLoginSuccess(nim)
         }
     }
@@ -347,7 +374,7 @@ fun MahasiswaLoginScreen(
                             color = TextNavy,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.clickable { /* TODO: Forgot Password */ }
+                            modifier = Modifier.clickable { onNavigateForgotPassword() }
                         )
                     }
                     
@@ -416,11 +443,12 @@ fun MahasiswaLoginScreen(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Login Mahasiswa - Default")
 @Composable
 fun PreviewMahasiswaLoginScreen() {
     MahasiswaLoginScreen(
         onLoginSuccess = {},
-        onNavigateBack = {}
+        onNavigateBack = {},
+        onNavigateForgotPassword = {}
     )
 }

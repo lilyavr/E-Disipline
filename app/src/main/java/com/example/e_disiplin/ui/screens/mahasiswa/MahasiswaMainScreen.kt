@@ -49,6 +49,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun MahasiswaMainScreen(
@@ -60,25 +61,13 @@ fun MahasiswaMainScreen(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: "beranda"
 
-    val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
-        if (result.contents != null) {
-            viewModel.processScan(result.contents, nim) { 
-                navController.navigate("scan_report")
-            }
-        }
-    }
-
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    val options = ScanOptions()
-                    options.setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-                    options.setPrompt("Arahkan kamera ke QR Code")
-                    options.setCameraId(0)
-                    options.setBeepEnabled(true)
-                    options.setBarcodeImageEnabled(false)
-                    scanLauncher.launch(options)
+                    navController.navigate("scan") {
+                        launchSingleTop = true
+                    }
                 },
                 shape = CircleShape,
                 containerColor = Color(0xFF1C2E5F),
@@ -133,12 +122,38 @@ fun MahasiswaMainScreen(
             composable("beranda") {
                 MahasiswaDashboardScreen(nim = nim, viewModel = viewModel)
             }
+            composable("scan") {
+                val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
+                    if (result.contents != null) {
+                        viewModel.processScan(result.contents, nim) {
+                            navController.navigate("scan_report") {
+                                popUpTo("scan") { inclusive = true }
+                            }
+                        }
+                    }
+                }
+                MahasiswaScanScreen(
+                    onLaunchScanner = {
+                        val options = ScanOptions()
+                        options.setCaptureActivity(CustomScannerActivity::class.java)
+                        options.setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+                        options.setPrompt("Arahkan kamera ke QR Code pelanggaran")
+                        options.setCameraId(0)
+                        options.setBeepEnabled(true)
+                        options.setBarcodeImageEnabled(false)
+                        scanLauncher.launch(options)
+                    },
+                    onNavigateBack = {
+                        navController.popBackStack("beranda", false)
+                    }
+                )
+            }
             composable("scan_report") {
                 val pelanggaran = viewModel.lastScannedPelanggaran.collectAsState().value
                 val mahasiswa = viewModel.mahasiswa.collectAsState().value
                 
                 if (pelanggaran != null && mahasiswa != null) {
-                    val formatter = SimpleDateFormat("dd MMM yyyy | HH:mm 'WIB'", Locale("id", "ID"))
+                    val formatter = SimpleDateFormat("dd MMM yyyy | HH:mm 'WIB'", Locale.forLanguageTag("id-ID"))
                     val waktu = formatter.format(Date(pelanggaran.tanggal))
 
                     MahasiswaScanReportScreen(
@@ -154,13 +169,21 @@ fun MahasiswaMainScreen(
                 }
             }
             composable("riwayat") {
-                MahasiswaRiwayatScreen()
+                MahasiswaRiwayatScreen(viewModel = viewModel)
             }
             composable("notifikasi") {
                 MahasiswaNotificationScreen(viewModel = viewModel)
             }
             composable("profil") {
-                MahasiswaProfileScreen(onLogoutClick = onLogoutClick)
+                MahasiswaProfileScreen(
+                    onLogoutClick = onLogoutClick,
+                    onNavigatePanduan = { navController.navigate("panduan") }
+                )
+            }
+            composable("panduan") {
+                MahasiswaPanduanScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
         }
     }
@@ -237,4 +260,28 @@ fun MahasiswaBottomNavigationBar(
             )
         )
     }
+}
+
+@Preview(showBackground = true, name = "Bottom Nav – Beranda")
+@Composable
+fun PreviewMahasiswaBottomNavBeranda() {
+    MahasiswaBottomNavigationBar(currentRoute = "beranda", onNavigate = {})
+}
+
+@Preview(showBackground = true, name = "Bottom Nav – Riwayat")
+@Composable
+fun PreviewMahasiswaBottomNavRiwayat() {
+    MahasiswaBottomNavigationBar(currentRoute = "riwayat", onNavigate = {})
+}
+
+@Preview(showBackground = true, name = "Bottom Nav – Notifikasi")
+@Composable
+fun PreviewMahasiswaBottomNavNotifikasi() {
+    MahasiswaBottomNavigationBar(currentRoute = "notifikasi", onNavigate = {})
+}
+
+@Preview(showBackground = true, name = "Bottom Nav – Profil")
+@Composable
+fun PreviewMahasiswaBottomNavProfil() {
+    MahasiswaBottomNavigationBar(currentRoute = "profil", onNavigate = {})
 }

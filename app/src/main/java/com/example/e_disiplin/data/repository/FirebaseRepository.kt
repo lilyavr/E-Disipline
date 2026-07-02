@@ -263,6 +263,24 @@ class FirebaseRepository {
         }
     }
 
+    fun getAllMahasiswaFlow(): Flow<List<Mahasiswa>> = callbackFlow {
+        val listener = mahasiswaCollection
+            .orderBy("nim")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    close(e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val list = snapshot.documents.mapNotNull { doc ->
+                        doc.toObject(Mahasiswa::class.java)
+                    }
+                    trySend(list)
+                }
+            }
+        awaitClose { listener.remove() }
+    }
+
     fun getPelanggaranByNimFlow(nim: String): Flow<List<Pelanggaran>> = callbackFlow {
         val listener = pelanggaranCollection
             .whereEqualTo("nimMahasiswa", nim)
@@ -279,5 +297,64 @@ class FirebaseRepository {
                 }
             }
         awaitClose { listener.remove() }
+    }
+    
+    // --- Forgot Password Methods ---
+    
+    suspend fun verifyMahasiswaForReset(nim: String, tanggalLahir: String): Boolean {
+        return try {
+            val querySnapshot = mahasiswaCollection
+                .whereEqualTo("nim", nim)
+                .whereEqualTo("tanggalLahir", tanggalLahir)
+                .get()
+                .await()
+            !querySnapshot.isEmpty
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    suspend fun verifyAdminForReset(username: String, email: String): Boolean {
+        return try {
+            val querySnapshot = adminCollection
+                .whereEqualTo("username", username)
+                .whereEqualTo("email", email)
+                .get()
+                .await()
+            !querySnapshot.isEmpty
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    suspend fun resetMahasiswaPassword(nim: String, newPasswordHash: String): Boolean {
+        return try {
+            mahasiswaCollection.document(nim).update("password", newPasswordHash).await()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    suspend fun resetAdminPassword(username: String, newPasswordHash: String): Boolean {
+        return try {
+            val querySnapshot = adminCollection
+                .whereEqualTo("username", username)
+                .get()
+                .await()
+            if (!querySnapshot.isEmpty) {
+                val docId = querySnapshot.documents.first().id
+                adminCollection.document(docId).update("password", newPasswordHash).await()
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 }

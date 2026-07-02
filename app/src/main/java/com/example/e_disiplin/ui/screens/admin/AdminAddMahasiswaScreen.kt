@@ -12,15 +12,23 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -56,11 +64,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+private val BgCream      = Color(0xFFF9F9F4)
 private val TextNavy     = Color(0xFF1B2154)
 private val TextGray     = Color(0xFF8A8D9E)
 private val ButtonActiveBg = Color(0xFF2A3F7B)
@@ -82,9 +90,9 @@ private val jurusanOptions = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddMahasiswaDialog(
+fun AdminAddMahasiswaScreen(
     viewModel: AdminMahasiswaViewModel,
-    onDismissRequest: () -> Unit
+    onNavigateBack: () -> Unit
 ) {
     var nim           by remember { mutableStateOf("") }
     var name          by remember { mutableStateOf("") }
@@ -106,7 +114,7 @@ fun AddMahasiswaDialog(
     LaunchedEffect(addState) {
         if (addState is AddMahasiswaState.Success) {
             viewModel.resetAddState()
-            onDismissRequest()
+            onNavigateBack()
         }
     }
 
@@ -144,28 +152,55 @@ fun AddMahasiswaDialog(
         }
     }
 
-    // ── Main Form Dialog ────────────────────────────────────────────────────────
-    Dialog(onDismissRequest = onDismissRequest) {
-        Card(
+    // ── Main Screen ─────────────────────────────────────────────────────────────
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BgCream)
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+            .padding(horizontal = 24.dp)
+    ) {
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Header
+        Row(
             modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = TextNavy,
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .clickable { onNavigateBack() }
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Tambah Mahasiswa",
+                color = TextNavy,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(bottom = 24.dp),
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(24.dp)
             ) {
-                // Title
-                Text(
-                    text = "Tambah Mahasiswa",
-                    color = TextNavy,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
                 // NIM
                 CustomTextField(value = nim, onValueChange = { nim = it }, label = "NIM")
                 Spacer(modifier = Modifier.height(12.dp))
@@ -338,15 +373,17 @@ fun AddMahasiswaDialog(
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                 }
+                
+                Spacer(modifier = Modifier.weight(1f))
 
                 // Action buttons
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedButton(
-                        onClick = onDismissRequest,
+                        onClick = onNavigateBack,
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = TextNavy),
                         border = BorderStroke(1.dp, CardBorder)
                     ) {

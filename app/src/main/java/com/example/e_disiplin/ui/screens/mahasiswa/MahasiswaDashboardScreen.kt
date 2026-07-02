@@ -3,6 +3,7 @@ package com.example.e_disiplin.ui.screens.mahasiswa
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -84,9 +90,9 @@ fun MahasiswaDashboardScreen(
         }
     }
 
-    val timeFormatter = DateTimeFormatter.ofPattern("HH.mm.ss", Locale("id", "ID"))
-    val dayFormatter = DateTimeFormatter.ofPattern("EEEE", Locale("id", "ID"))
-    val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale("id", "ID"))
+    val timeFormatter = DateTimeFormatter.ofPattern("HH.mm.ss", Locale.forLanguageTag("id-ID"))
+    val dayFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.forLanguageTag("id-ID"))
+    val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.forLanguageTag("id-ID"))
 
     Box(
         modifier = Modifier
@@ -281,49 +287,48 @@ fun MahasiswaDashboardScreen(
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                     .padding(24.dp)
             ) {
+                val verifiedList by viewModel.verifiedPelanggaran.collectAsState()
+                val jumlahPelanggaran = verifiedList.size
+
+                val statusDisiplin = when {
+                    totalPoin >= 8 -> "Bahaya"
+                    totalPoin >= 5 -> "Waspada"
+                    else -> "Baik"
+                }
+
+                val statusColor = when {
+                    totalPoin >= 8 -> RedAccent
+                    totalPoin >= 5 -> GoldAccent
+                    else -> GreenAccent
+                }
+
+                val statusIcon = when {
+                    totalPoin >= 8 -> Icons.Filled.Warning
+                    totalPoin >= 5 -> Icons.Filled.Notifications
+                    else -> Icons.Filled.Security
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     GridCard(
                         modifier = Modifier.weight(1f),
-                        icon = "📊",
-                        iconBgColor = Color(0xFFF3F3F6),
-                        number = "0",
-                        numberColor = GreenAccent, // Assuming green since it's 0 poin
-                        label = "Total Poin"
-                    )
-                    GridCard(
-                        modifier = Modifier.weight(1f),
-                        icon = "✅",
+                        icon = Icons.Filled.Assignment,
+                        iconTint = Color.Black,
                         iconBgColor = Color(0xFFE6F4EA),
-                        number = "0",
-                        numberColor = GreenAccent,
+                        number = jumlahPelanggaran.toString(),
+                        numberColor = if (jumlahPelanggaran > 0) RedAccent else GreenAccent,
                         label = "Jml. Pelanggaran"
                     )
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
                     GridCard(
                         modifier = Modifier.weight(1f),
-                        icon = "🛡️",
+                        icon = statusIcon,
+                        iconTint = Color.Black,
                         iconBgColor = Color(0xFFF9F5EC),
-                        number = "Baik",
-                        numberColor = GreenAccent,
+                        number = statusDisiplin,
+                        numberColor = statusColor,
                         label = "Status Disiplin"
-                    )
-                    GridCard(
-                        modifier = Modifier.weight(1f),
-                        icon = "📅",
-                        iconBgColor = Color(0xFFF3F3F6),
-                        number = mahasiswa?.semester ?: "-",
-                        numberColor = TextNavy,
-                        label = "Semester Aktif"
                     )
                 }
                 
@@ -368,137 +373,146 @@ fun MahasiswaDashboardScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Days Row
+                var selectedDay by remember { mutableStateOf("Kam") }
+                
+                val days = listOf(
+                    DayItem("Min", isSelected = selectedDay == "Min", hasSchedule = false),
+                    DayItem("Sen", isSelected = selectedDay == "Sen", hasSchedule = true),
+                    DayItem("Sel", isSelected = selectedDay == "Sel", hasSchedule = true),
+                    DayItem("Rab", isSelected = selectedDay == "Rab", hasSchedule = false),
+                    DayItem("Kam", isSelected = selectedDay == "Kam", hasSchedule = true),
+                    DayItem("Jum", isSelected = selectedDay == "Jum", hasSchedule = false),
+                    DayItem("Sab", isSelected = selectedDay == "Sab", hasSchedule = false)
+                )
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    val days = listOf(
-                        DayItem("Min", isSelected = false, hasSchedule = false),
-                        DayItem("Sen", isSelected = false, hasSchedule = true),
-                        DayItem("Sel", isSelected = false, hasSchedule = true),
-                        DayItem("Rab", isSelected = false, hasSchedule = false),
-                        DayItem("Kam", isSelected = true, hasSchedule = true),
-                        DayItem("Jum", isSelected = false, hasSchedule = false),
-                        DayItem("Sab", isSelected = false, hasSchedule = false)
-                    )
-                    
                     days.forEach { day ->
-                        DayPill(day, modifier = Modifier.weight(1f))
+                        DayPill(
+                            day = day, 
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { selectedDay = day.name }
+                        )
                     }
                 }
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                // Active Schedule Card Example
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                val currentSelectedDay = days.find { it.isSelected }
+                
+                if (currentSelectedDay?.hasSchedule == true) {
+                    // Active Schedule Card Example
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
-                        // Time column
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.width(50.dp)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "18.30",
-                                color = TextNavy,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            // Time column
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.width(50.dp)
+                            ) {
+                                Text(
+                                    text = "18.30",
+                                    color = TextNavy,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp)
+                                        .height(1.dp)
+                                        .background(Color(0xFFE5E5EA))
+                                )
+                                Text(
+                                    text = "21.50",
+                                    color = TextGray,
+                                    fontSize = 12.sp
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.width(16.dp))
+                            
+                            // Details column
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Manajemen Sumber Daya Manusia",
+                                    color = TextNavy,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    lineHeight = 20.sp
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("📍", fontSize = 12.sp)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "R316 • 4 SKS",
+                                        color = TextGray,
+                                        fontSize = 13.sp
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.width(8.dp))
+                            
+                            // "Malam ini" chip
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp)
-                                    .height(1.dp)
-                                    .background(Color(0xFFE5E5EA))
-                            )
-                            Text(
-                                text = "21.50",
-                                color = TextGray,
-                                fontSize = 12.sp
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.width(16.dp))
-                        
-                        // Details column
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Manajemen Sumber Daya Manusia",
-                                color = TextNavy,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                lineHeight = 20.sp
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("📍", fontSize = 12.sp)
-                                Spacer(modifier = Modifier.width(4.dp))
+                                    .border(1.dp, GoldAccent.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFFFFDF5), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                            ) {
                                 Text(
-                                    text = "R316 • 4 SKS",
-                                    color = TextGray,
-                                    fontSize = 13.sp
+                                    text = "Malam ini",
+                                    color = GoldAccent,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }
-                        
-                        Spacer(modifier = Modifier.width(8.dp))
-                        
-                        // "Malam ini" chip
-                        Box(
+                    }
+                } else {
+                    // Empty state card Example
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(
                             modifier = Modifier
-                                .border(1.dp, GoldAccent.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
-                                .background(Color(0xFFFFFDF5), RoundedCornerShape(8.dp))
-                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                                .fillMaxWidth()
+                                .padding(vertical = 32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
+                            Text(text = "✨", fontSize = 28.sp)
+                            Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "Malam ini",
-                                color = GoldAccent,
-                                fontSize = 11.sp,
+                                text = "Tidak Ada Perkuliahan",
+                                color = TextNavy,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Kelas kosong — waktu belajar mandiri 📚",
+                                color = TextGray,
+                                fontSize = 13.sp
+                            )
                         }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Empty state card Example
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(text = "✨", fontSize = 28.sp)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Tidak Ada Perkuliahan",
-                            color = TextNavy,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Kelas kosong — waktu belajar mandiri 📚",
-                            color = TextGray,
-                            fontSize = 13.sp
-                        )
                     }
                 }
                 
@@ -506,12 +520,6 @@ fun MahasiswaDashboardScreen(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewMahasiswaDashboardScreen() {
-    MahasiswaDashboardScreen(nim = "2021133005")
 }
 
 data class DayItem(val name: String, val isSelected: Boolean, val hasSchedule: Boolean)
@@ -554,4 +562,10 @@ fun DayPill(day: DayItem, modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Dashboard Mahasiswa – Full Screen")
+@Composable
+fun PreviewMahasiswaDashboardScreen() {
+    MahasiswaDashboardScreen(nim = "2021133001")
 }

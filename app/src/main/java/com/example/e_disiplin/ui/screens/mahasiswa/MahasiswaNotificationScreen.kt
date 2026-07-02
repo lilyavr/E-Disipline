@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.e_disiplin.domain.model.Pelanggaran
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -148,7 +149,7 @@ fun MahasiswaNotificationScreen(
 
 @Composable
 fun VerifiedNotificationCard(pelanggaran: Pelanggaran) {
-    val formatter = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("id", "ID"))
+    val formatter = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.forLanguageTag("id-ID"))
     val waktu = formatter.format(Date(pelanggaran.tanggal))
 
     Card(
@@ -247,5 +248,104 @@ fun VerifiedNotificationCard(pelanggaran: Pelanggaran) {
                 }
             }
         }
+    }
+}
+
+// ── Previews ──────────────────────────────────────────────────────────────────
+
+private val sampleNotifPelanggaran = listOf(
+    Pelanggaran(
+        id = "abc123",
+        nimMahasiswa = "2021133001",
+        kategoriId = "k1",
+        kategoriName = "Telat Masuk Kelas",
+        tingkat = "ringan",
+        poin = 5,
+        status = "Verified",
+        tanggal = System.currentTimeMillis() - 3_600_000L
+    ),
+    Pelanggaran(
+        id = "def456",
+        nimMahasiswa = "2021133001",
+        kategoriId = "k2",
+        kategoriName = "Tidak Memakai Seragam",
+        tingkat = "sedang",
+        poin = 10,
+        status = "Verified",
+        tanggal = System.currentTimeMillis() - 86_400_000L
+    ),
+    Pelanggaran(
+        id = "ghi789",
+        nimMahasiswa = "2021133001",
+        kategoriId = "k3",
+        kategoriName = "Pelanggaran Umum",
+        tingkat = "berat",
+        poin = 25,
+        status = "Verified",
+        tanggal = System.currentTimeMillis() - 172_800_000L
+    )
+)
+
+/**
+ * Preview renders the notification list with static sample data.
+ * No ViewModel or Firebase is needed.
+ */
+@Preview(showBackground = true, showSystemUi = true, name = "Notifikasi Mahasiswa – Ada Data")
+@Composable
+fun PreviewMahasiswaNotificationWithData() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BgCream)
+            .padding(horizontal = 24.dp)
+    ) {
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "Notifikasi",
+            color = TextNavy,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Riwayat pelanggaran terverifikasi",
+            color = TextGray,
+            fontSize = 13.sp
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(sampleNotifPelanggaran, key = { it.id }) { p ->
+                VerifiedNotificationCard(pelanggaran = p)
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Notifikasi Mahasiswa – Kosong")
+@Composable
+fun PreviewMahasiswaNotificationEmpty() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BgCream)
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Notifications,
+            contentDescription = null,
+            tint = TextGray.copy(alpha = 0.3f),
+            modifier = Modifier.size(72.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Belum ada notifikasi",
+            color = TextGray,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center
+        )
     }
 }

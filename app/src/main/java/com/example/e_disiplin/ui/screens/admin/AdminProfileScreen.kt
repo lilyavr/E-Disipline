@@ -62,7 +62,9 @@ private val RedLightBg = Color(0xFFFDECEB)
 @Composable
 fun AdminProfileScreen(
     onLogoutClick: () -> Unit = {},
-    onNavigateToSettings: () -> Unit = {}
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToMahasiswa: () -> Unit = {},
+    onNavigateToPanduan: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -178,7 +180,7 @@ fun AdminProfileScreen(
                     icon = { Text("🎓", fontSize = 20.sp) },
                     title = "Manajemen Mahasiswa",
                     subtitle = "Daftar & data mahasiswa",
-                    onClick = { /* TODO */ }
+                    onClick = onNavigateToMahasiswa
                 )
                 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -205,7 +207,7 @@ fun AdminProfileScreen(
                     icon = { Text("❓", fontSize = 20.sp) },
                     title = "Bantuan & Panduan",
                     subtitle = "Cara penggunaan aplikasi",
-                    onClick = { /* TODO */ }
+                    onClick = onNavigateToPanduan
                 )
                 
                 Spacer(modifier = Modifier.height(32.dp))

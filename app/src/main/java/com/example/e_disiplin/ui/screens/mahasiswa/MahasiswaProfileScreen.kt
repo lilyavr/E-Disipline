@@ -60,7 +60,7 @@ private val RedLightBg = Color(0xFFFDECEB)
 private val TextNavy = Color(0xFF1B2154)
 
 @Composable
-fun MahasiswaProfileScreen(onLogoutClick: () -> Unit = {}) {
+fun MahasiswaProfileScreen(onLogoutClick: () -> Unit = {}, onNavigatePanduan: () -> Unit = {}) {
     var showProfileDialog by remember { mutableStateOf(false) }
 
     if (showProfileDialog) {
@@ -194,7 +194,7 @@ fun MahasiswaProfileScreen(onLogoutClick: () -> Unit = {}) {
                     },
                     title = "Bantuan",
                     subtitle = "Panduan penggunaan aplikasi",
-                    onClick = { /* TODO */ }
+                    onClick = { onNavigatePanduan() }
                 )
                 
                 Spacer(modifier = Modifier.height(32.dp))

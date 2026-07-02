@@ -27,9 +27,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -73,20 +72,12 @@ fun AdminDashboardScreen(
     viewModel: AdminMahasiswaViewModel = viewModel()
 ) {
     var currentTime by remember { mutableStateOf(LocalDateTime.now()) }
-    var showAddDialog by remember { mutableStateOf(false) }
     var activeQrDrawable by remember { mutableStateOf<Int?>(null) }
     
     val totalMahasiswa by viewModel.totalMahasiswa.collectAsState()
     val pendingCount by viewModel.pendingCount.collectAsState()
     val todayCount by viewModel.todayCount.collectAsState()
     val verifiedMonthCount by viewModel.verifiedMonthCount.collectAsState()
-
-    if (showAddDialog) {
-        AddMahasiswaDialog(
-            viewModel = viewModel,
-            onDismissRequest = { showAddDialog = false }
-        )
-    }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -98,10 +89,10 @@ fun AdminDashboardScreen(
     val timeFormatter = DateTimeFormatter.ofPattern("HH.mm.ss")
     val timeString = currentTime.format(timeFormatter)
 
-    val dayFormatter = DateTimeFormatter.ofPattern("EEEE", Locale("id", "ID"))
+    val dayFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.forLanguageTag("id-ID"))
     val dayString = currentTime.format(dayFormatter).uppercase()
 
-    val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale("id", "ID"))
+    val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.forLanguageTag("id-ID"))
     val dateString = currentTime.format(dateFormatter)
 
     Box(
@@ -272,13 +263,6 @@ fun AdminDashboardScreen(
                         fontWeight = FontWeight.Bold,
                         color = TextNavy
                     )
-                    Button(
-                        onClick = { showAddDialog = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = GlassBlue),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(text = "+ Tambah Mahasiswa", fontSize = 12.sp, color = Color.White)
-                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -288,7 +272,8 @@ fun AdminDashboardScreen(
                 ) {
                     GridCard(
                         modifier = Modifier.fillMaxWidth(),
-                        icon = "🎓",
+                        icon = Icons.Filled.Person,
+                        iconTint = TextNavy,
                         iconBgColor = Color(0xFFF3F3F6),
                         number = totalMahasiswa.toString(),
                         numberColor = TextNavy,
@@ -455,7 +440,8 @@ fun SummaryCard(modifier: Modifier = Modifier, number: String, numberColor: Colo
 @Composable
 fun GridCard(
     modifier: Modifier = Modifier,
-    icon: String,
+    icon: ImageVector,
+    iconTint: Color = Color.Black,
     iconBgColor: Color,
     number: String,
     numberColor: Color,
@@ -478,7 +464,12 @@ fun GridCard(
                     .background(iconBgColor),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = icon, fontSize = 16.sp)
+                Icon(
+                    imageVector = icon,
+                    contentDescription = label,
+                    tint = iconTint,
+                    modifier = Modifier.size(20.dp)
+                )
             }
             
             Spacer(modifier = Modifier.height(16.dp))

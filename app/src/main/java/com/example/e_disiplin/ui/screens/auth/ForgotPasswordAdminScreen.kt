@@ -1,0 +1,421 @@
+package com.example.e_disiplin.ui.screens.auth
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.e_disiplin.R
+
+// Colors
+private val BgCream = Color(0xFFF9F9F4)
+private val TextNavy = Color(0xFF1B2154)
+private val TextGray = Color(0xFF8A8D9E)
+private val GoldAccent = Color(0xFFF2B705)
+private val InputBorder = Color(0xFFE5E5EA)
+private val ButtonActiveBg = Color(0xFF485885)
+
+@Composable
+fun ForgotPasswordAdminScreen(
+    onNavigateBack: () -> Unit,
+    viewModel: ForgotPasswordViewModel = viewModel()
+) {
+    var step by remember { mutableStateOf(1) } // 1: Verify, 2: Reset
+
+    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    val forgotPasswordState by viewModel.forgotPasswordState.collectAsState()
+
+    LaunchedEffect(forgotPasswordState) {
+        if (forgotPasswordState is ForgotPasswordState.VerificationSuccess) {
+            viewModel.resetState()
+            step = 2
+        } else if (forgotPasswordState is ForgotPasswordState.ResetSuccess) {
+            viewModel.resetState()
+            onNavigateBack() // Go back to login on success
+        }
+    }
+
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
+    Scaffold { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BgCream)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = innerPadding.calculateBottomPadding())
+            ) {
+                // TOP HERO SECTION
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(screenHeight * 0.45f)
+                        .background(
+                            color = TextNavy,
+                            shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                        )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+                            .padding(24.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color.White.copy(alpha = 0.2f))
+                                    .clickable { onNavigateBack() }
+                                    .padding(8.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Kembali",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Kembali", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        Box(
+                            modifier = Modifier
+                                .size(80.dp)
+                                .border(2.dp, Color(0xFF5D6B9B), CircleShape)
+                                .padding(4.dp)
+                                .clip(CircleShape)
+                                .background(Color.White),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.img_onboarding_bear),
+                                contentDescription = "Logo",
+                                modifier = Modifier.size(56.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(color = GoldAccent)) {
+                                    append("Lupa ")
+                                }
+                                withStyle(style = SpanStyle(color = Color.White)) {
+                                    append("PASSWORD")
+                                }
+                            },
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+
+                        Spacer(modifier = Modifier.weight(1.5f))
+                        
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Text(
+                                text = if (step == 1) "Verifikasi Data" else "Buat Password Baru",
+                                color = Color.White,
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = if (step == 1) "Masukkan Username dan Email Anda (Admin)" else "Pastikan password Anda aman",
+                                color = Color(0xFFD9D9E3),
+                                fontSize = 14.sp
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
+                }
+
+                // BOTTOM CONTENT SECTION
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = screenHeight * 0.55f)
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                        .padding(horizontal = 24.dp, vertical = 32.dp)
+                ) {
+                    if (step == 1) {
+                        // Username Label
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(color = TextNavy, fontWeight = FontWeight.Bold)) {
+                                    append("Username ")
+                                }
+                                withStyle(style = SpanStyle(color = Color(0xFFE95B5B))) {
+                                    append("*")
+                                }
+                            },
+                            fontSize = 14.sp
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        OutlinedTextField(
+                            value = username,
+                            onValueChange = { username = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Masukkan Username", color = TextGray) },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = ButtonActiveBg,
+                                unfocusedBorderColor = InputBorder,
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                focusedTextColor = TextNavy,
+                                unfocusedTextColor = TextNavy
+                            ),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                        )
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        // Email Label
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(color = TextNavy, fontWeight = FontWeight.Bold)) {
+                                    append("Email ")
+                                }
+                                withStyle(style = SpanStyle(color = Color(0xFFE95B5B))) {
+                                    append("*")
+                                }
+                            },
+                            fontSize = 14.sp
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Contoh: admin@edisiplin.com", color = TextGray) },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = ButtonActiveBg,
+                                unfocusedBorderColor = InputBorder,
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                focusedTextColor = TextNavy,
+                                unfocusedTextColor = TextNavy
+                            ),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        )
+                    } else {
+                        // New Password Label
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(color = TextNavy, fontWeight = FontWeight.Bold)) {
+                                    append("Password Baru ")
+                                }
+                                withStyle(style = SpanStyle(color = Color(0xFFE95B5B))) {
+                                    append("*")
+                                }
+                            },
+                            fontSize = 14.sp
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        OutlinedTextField(
+                            value = newPassword,
+                            onValueChange = { newPassword = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Masukkan password baru", color = TextGray) },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = ButtonActiveBg,
+                                unfocusedBorderColor = InputBorder,
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                focusedTextColor = TextNavy,
+                                unfocusedTextColor = TextNavy
+                            ),
+                            singleLine = true,
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            trailingIcon = {
+                                val text = if (passwordVisible) "🙈" else "👁️"
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Text(text, fontSize = 18.sp)
+                                }
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Confirm Password Label
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(color = TextNavy, fontWeight = FontWeight.Bold)) {
+                                    append("Konfirmasi Password ")
+                                }
+                                withStyle(style = SpanStyle(color = Color(0xFFE95B5B))) {
+                                    append("*")
+                                }
+                            },
+                            fontSize = 14.sp
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        OutlinedTextField(
+                            value = confirmPassword,
+                            onValueChange = { confirmPassword = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Ulangi password baru", color = TextGray) },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = ButtonActiveBg,
+                                unfocusedBorderColor = InputBorder,
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                focusedTextColor = TextNavy,
+                                unfocusedTextColor = TextNavy
+                            ),
+                            singleLine = true,
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                        )
+                    }
+
+                    if (forgotPasswordState is ForgotPasswordState.Error) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = (forgotPasswordState as ForgotPasswordState.Error).message,
+                            color = Color(0xFFE95B5B),
+                            fontSize = 14.sp
+                        )
+                    } else if (newPassword.isNotEmpty() && confirmPassword.isNotEmpty() && newPassword != confirmPassword) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Password tidak cocok",
+                            color = Color(0xFFE95B5B),
+                            fontSize = 14.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Button(
+                        onClick = {
+                            if (step == 1) {
+                                viewModel.verifyAdmin(username, email)
+                            } else {
+                                if (newPassword == confirmPassword) {
+                                    viewModel.resetPassword(username, newPassword, isMahasiswa = false)
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = ButtonActiveBg,
+                            disabledContainerColor = InputBorder
+                        ),
+                        enabled = forgotPasswordState !is ForgotPasswordState.Loading &&
+                                if (step == 1) username.isNotBlank() && email.isNotBlank() 
+                                else newPassword.isNotBlank() && newPassword == confirmPassword
+                    ) {
+                        if (forgotPasswordState is ForgotPasswordState.Loading) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        } else {
+                            Text(
+                                text = if (step == 1) "Verifikasi" else "Simpan Password Baru",
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

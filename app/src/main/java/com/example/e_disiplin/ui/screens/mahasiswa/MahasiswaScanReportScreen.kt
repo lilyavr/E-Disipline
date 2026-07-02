@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.e_disiplin.domain.model.Pelanggaran
 
 private val BgLightBlue = Color(0xFFF4F7FC)
@@ -200,4 +201,36 @@ fun ReportRow(label: String, value: String) {
             modifier = Modifier.weight(0.6f)
         )
     }
+}
+
+// ── Previews ──────────────────────────────────────────────────────────────────
+
+/**
+ * Full-screen preview of MahasiswaScanReportScreen with sample scan data.
+ * No ViewModel or Firebase needed — all params are plain values.
+ */
+@Preview(showBackground = true, showSystemUi = true, name = "Scan Report – Keterlambatan")
+@Composable
+fun PreviewMahasiswaScanReportKeterlambatan() {
+    MahasiswaScanReportScreen(
+        pelanggaranId = "AB12CD34",
+        jenis = "Telat Masuk Kelas",
+        mahasiswaName = "Andi Pratama",
+        nim = "2021133001",
+        waktu = "02 Jul 2026 | 08:15 WIB",
+        onNavigateBack = {}
+    )
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "Scan Report – Pelanggaran Umum")
+@Composable
+fun PreviewMahasiswaScanReportUmum() {
+    MahasiswaScanReportScreen(
+        pelanggaranId = "XY98ZW10",
+        jenis = "Pelanggaran Umum",
+        mahasiswaName = "Citra Dewi",
+        nim = "2021133003",
+        waktu = "02 Jul 2026 | 10:30 WIB",
+        onNavigateBack = {}
+    )
 }

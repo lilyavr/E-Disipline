@@ -9,6 +9,8 @@ import androidx.navigation.NavType
 import com.example.e_disiplin.ui.screens.admin.AdminMainScreen
 import com.example.e_disiplin.ui.screens.auth.AdminLoginScreen
 import com.example.e_disiplin.ui.screens.auth.MahasiswaLoginScreen
+import com.example.e_disiplin.ui.screens.auth.ForgotPasswordAdminScreen
+import com.example.e_disiplin.ui.screens.auth.ForgotPasswordMahasiswaScreen
 import com.example.e_disiplin.ui.screens.auth.SelectRoleScreen
 import com.example.e_disiplin.ui.screens.mahasiswa.MahasiswaMainScreen
 import com.example.e_disiplin.ui.screens.onboarding.OnboardingDisciplinScreen
@@ -61,6 +63,9 @@ fun AppNavigation() {
                 },
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onNavigateForgotPassword = {
+                    navController.navigate("admin_forgot_password")
                 }
             )
         }
@@ -84,6 +89,9 @@ fun AppNavigation() {
                 },
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onNavigateForgotPassword = {
+                    navController.navigate("mahasiswa_forgot_password")
                 }
             )
         }
@@ -99,6 +107,22 @@ fun AppNavigation() {
                     navController.navigate("select_role") {
                         popUpTo(0) { inclusive = true }
                     }
+                }
+            )
+        }
+        
+        composable("admin_forgot_password") {
+            ForgotPasswordAdminScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        composable("mahasiswa_forgot_password") {
+            ForgotPasswordMahasiswaScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }
