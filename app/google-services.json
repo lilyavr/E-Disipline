@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "10440955177",
+    "project_id": "e-disiplin-a2e57",
+    "storage_bucket": "e-disiplin-a2e57.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:10440955177:android:e60ece03814abb28d21338",
+        "android_client_info": {
+          "package_name": "com.example.e_disiplin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfMfjqumS0Qs6Y5qt_Zpsthf0ob-ZL7bk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
