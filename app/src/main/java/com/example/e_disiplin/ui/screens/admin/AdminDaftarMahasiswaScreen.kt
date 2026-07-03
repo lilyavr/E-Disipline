@@ -251,14 +251,20 @@ fun MahasiswaListCard(
     onClick: () -> Unit
 ) {
     val poinColor = when {
-        mahasiswa.totalPoin == 0 -> DMLGreen
-        mahasiswa.totalPoin < 30 -> DMLGold
+        mahasiswa.totalPoin < 25 -> DMLGreen
+        mahasiswa.totalPoin < 40 -> DMLGold
         else -> DMLRed
     }
     val poinBg = when {
-        mahasiswa.totalPoin == 0 -> Color(0xFFE8F5E9)
-        mahasiswa.totalPoin < 30 -> Color(0xFFFFFDE7)
+        mahasiswa.totalPoin < 25 -> Color(0xFFE8F5E9)
+        mahasiswa.totalPoin < 40 -> Color(0xFFFFFDE7)
         else -> Color(0xFFFDECEB)
+    }
+    val statusText = when {
+        mahasiswa.totalPoin < 10 -> "Aman"
+        mahasiswa.totalPoin < 25 -> "Waspada"
+        mahasiswa.totalPoin < 40 -> "Bahaya"
+        else -> "Bahaya"
     }
 
     Card(
@@ -326,8 +332,7 @@ fun MahasiswaListCard(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = if (mahasiswa.totalPoin == 0) "0 Poin • Baik"
-                               else "${mahasiswa.totalPoin} Poin",
+                        text = "${mahasiswa.totalPoin} Poin • $statusText",
                         color = poinColor,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold

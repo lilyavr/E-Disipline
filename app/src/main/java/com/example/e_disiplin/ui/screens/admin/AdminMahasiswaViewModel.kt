@@ -63,12 +63,20 @@ class AdminMahasiswaViewModel : ViewModel() {
 
     private fun observeMahasiswaList() {
         viewModelScope.launch {
-            repository.getAllMahasiswaFlow()
-                .catch { e -> e.printStackTrace() }
-                .collect { list ->
-                    _mahasiswaList.value = list
-                    _totalMahasiswa.value = list.size.toLong()
+            kotlinx.coroutines.flow.combine(
+                repository.getAllMahasiswaFlow(),
+                repository.getAllPelanggaranFlow()
+            ) { mList, pList ->
+                mList.map { m ->
+                    val livePoin = pList.filter { it.nimMahasiswa == m.nim && it.status == "Verified" }.sumOf { it.poin }
+                    m.copy(totalPoin = livePoin)
                 }
+            }
+            .catch { e -> e.printStackTrace() }
+            .collect { list ->
+                _mahasiswaList.value = list
+                _totalMahasiswa.value = list.size.toLong()
+            }
         }
     }
 

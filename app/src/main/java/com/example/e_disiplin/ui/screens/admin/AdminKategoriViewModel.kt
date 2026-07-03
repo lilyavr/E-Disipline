@@ -36,12 +36,14 @@ class AdminKategoriViewModel : ViewModel() {
 
     private suspend fun seedInitialKategori() {
         val defaultCategories = listOf(
-            KategoriPelanggaran(nama = "Keterlambatan Hadir", tingkat = "ringan", poin = 5),
-            KategoriPelanggaran(nama = "Pelanggaran Pakaian", tingkat = "ringan", poin = 5),
-            KategoriPelanggaran(nama = "Penggunaan HP Saat Kuliah", tingkat = "sedang", poin = 10),
-            KategoriPelanggaran(nama = "Ketidakhadiran Tanpa Izin", tingkat = "sedang", poin = 15),
-            KategoriPelanggaran(nama = "Perkelahian / Kekerasan", tingkat = "berat", poin = 30),
-            KategoriPelanggaran(nama = "Pemalsuan Dokumen", tingkat = "berat", poin = 40)
+            KategoriPelanggaran(nama = "Berpakaian tidak sesuai kode etik", tingkat = "ringan", poin = 2),
+            KategoriPelanggaran(nama = "Tidak memakai jas almamater pada kegiatan wajib", tingkat = "ringan", poin = 2),
+            KategoriPelanggaran(nama = "Membuang sampah sembarangan", tingkat = "ringan", poin = 3),
+            KategoriPelanggaran(nama = "Mengganggu jalan perkuliahan", tingkat = "sedang", poin = 5),
+            KategoriPelanggaran(nama = "Menggunakan HP saat kuliah tanpa izin", tingkat = "sedang", poin = 4),
+            KategoriPelanggaran(nama = "Merokok atau membawa Vape di area kampus", tingkat = "berat", poin = 7),
+            KategoriPelanggaran(nama = "Plagiarisme", tingkat = "berat", poin = 10),
+            KategoriPelanggaran(nama = "Merusak fasilitas kampus", tingkat = "berat", poin = 8)
         )
         
         for (kategori in defaultCategories) {

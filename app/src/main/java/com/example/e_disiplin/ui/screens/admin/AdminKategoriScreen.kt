@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -87,6 +88,15 @@ fun AdminKategoriScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
 
+    var selectedFilter by remember { mutableStateOf("Semua") }
+    val filters = listOf("Semua", "Ringan", "Sedang", "Berat")
+
+    val filteredList = if (selectedFilter == "Semua") {
+        kategoriList
+    } else {
+        kategoriList.filter { it.tingkat.equals(selectedFilter, ignoreCase = true) }
+    }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -141,21 +151,55 @@ fun AdminKategoriScreen(
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = ButtonActiveBg)
                     }
-                } else if (kategoriList.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Belum ada kategori", color = TextGray)
-                    }
                 } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 80.dp),
-                        modifier = Modifier.fillMaxSize()
+                    // Filter Tabs
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        contentPadding = PaddingValues(horizontal = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(kategoriList) { kategori ->
-                            KategoriCard(
-                                kategori = kategori,
-                                onDelete = { viewModel.deleteKategori(kategori.id) }
-                            )
-                            HorizontalDivider(color = CardBorder, thickness = 1.dp)
+                        items(filters) { filter ->
+                            val isSelected = filter == selectedFilter
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        color = if (isSelected) ButtonActiveBg else Color.White,
+                                        shape = RoundedCornerShape(20.dp)
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isSelected) ButtonActiveBg else CardBorder,
+                                        shape = RoundedCornerShape(20.dp)
+                                    )
+                                    .clickable { selectedFilter = filter }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = filter,
+                                    color = if (isSelected) Color.White else TextGray,
+                                    fontSize = 14.sp,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            }
+                        }
+                    }
+                    
+                    if (filteredList.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(if (kategoriList.isEmpty()) "Belum ada kategori" else "Tidak ada kategori untuk filter ini", color = TextGray)
+                        }
+                    } else {
+                        LazyColumn(
+                            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 80.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(filteredList) { kategori ->
+                                KategoriCard(
+                                    kategori = kategori,
+                                    onDelete = { viewModel.deleteKategori(kategori.id) }
+                                )
+                                HorizontalDivider(color = CardBorder, thickness = 1.dp)
+                            }
                         }
                     }
                 }
@@ -194,7 +238,7 @@ fun KategoriCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
             Text(
                 text = kategori.nama,
                 color = TextNavy,

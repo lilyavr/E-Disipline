@@ -93,6 +93,8 @@ fun MahasiswaDashboardScreen(
     val timeFormatter = DateTimeFormatter.ofPattern("HH.mm.ss", Locale.forLanguageTag("id-ID"))
     val dayFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.forLanguageTag("id-ID"))
     val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.forLanguageTag("id-ID"))
+    
+    var showWarningDialog by remember(totalPoin) { mutableStateOf(totalPoin > 50) }
 
     Box(
         modifier = Modifier
@@ -291,20 +293,21 @@ fun MahasiswaDashboardScreen(
                 val jumlahPelanggaran = verifiedList.size
 
                 val statusDisiplin = when {
-                    totalPoin >= 8 -> "Bahaya"
-                    totalPoin >= 5 -> "Waspada"
-                    else -> "Baik"
+                    totalPoin < 10 -> "Aman"
+                    totalPoin < 25 -> "Waspada"
+                    totalPoin < 40 -> "Bahaya"
+                    else -> "Bahaya"
                 }
 
                 val statusColor = when {
-                    totalPoin >= 8 -> RedAccent
-                    totalPoin >= 5 -> GoldAccent
+                    totalPoin >= 40 -> RedAccent
+                    totalPoin >= 25 -> GoldAccent
                     else -> GreenAccent
                 }
 
                 val statusIcon = when {
-                    totalPoin >= 8 -> Icons.Filled.Warning
-                    totalPoin >= 5 -> Icons.Filled.Notifications
+                    totalPoin >= 40 -> Icons.Filled.Warning
+                    totalPoin >= 25 -> Icons.Filled.Notifications
                     else -> Icons.Filled.Security
                 }
 
@@ -518,6 +521,22 @@ fun MahasiswaDashboardScreen(
                 
                 Spacer(modifier = Modifier.height(100.dp)) // Extra padding for bottom nav
             }
+        }
+        
+        if (showWarningDialog) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showWarningDialog = false },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = { showWarningDialog = false }) {
+                        Text("Tutup", color = RedAccent)
+                    }
+                },
+                title = { Text("Peringatan Kritis!") },
+                text = { Text("Poin pelanggaran Anda telah melebihi 50 poin. Silakan segera menghadap pihak akademik.") },
+                containerColor = Color.White,
+                titleContentColor = RedAccent,
+                textContentColor = TextNavy
+            )
         }
     }
 }

@@ -39,6 +39,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -88,10 +91,19 @@ fun AdminMahasiswaDetailScreen(
     // Compute totalPoin live from Verified pelanggaran (real-time from Firebase)
     val totalPoin  = verified.sumOf { it.poin }
     val poinColor  = when {
-        totalPoin == 0  -> DTLGreen
-        totalPoin < 30  -> DTLGold
+        totalPoin < 25  -> DTLGreen
+        totalPoin < 40  -> DTLGold
         else            -> DTLRed
     }
+    
+    val statusText = when {
+        totalPoin < 10 -> "Aman"
+        totalPoin < 25 -> "Waspada"
+        totalPoin < 40 -> "Bahaya"
+        else -> "Bahaya"
+    }
+    
+    var showWarningDialog by remember(totalPoin) { mutableStateOf(totalPoin > 50) }
 
     Box(modifier = Modifier.fillMaxSize().background(DTLBg)) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -188,8 +200,7 @@ fun AdminMahasiswaDetailScreen(
                                 .padding(horizontal = 18.dp, vertical = 8.dp)
                         ) {
                             Text(
-                                text = if (totalPoin == 0) "0 Poin • Status Baik"
-                                       else "$totalPoin Poin Pelanggaran",
+                                text = "$totalPoin Poin • $statusText",
                                 color = poinColor,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
@@ -291,6 +302,22 @@ fun AdminMahasiswaDetailScreen(
             }
 
             item { Spacer(modifier = Modifier.height(32.dp)) }
+        }
+        
+        if (showWarningDialog) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showWarningDialog = false },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = { showWarningDialog = false }) {
+                        Text("Tutup", color = DTLRed)
+                    }
+                },
+                title = { Text("Peringatan Kritis!") },
+                text = { Text("Mahasiswa ini telah melebihi 50 poin pelanggaran. Tindakan indisipliner lebih lanjut diperlukan.") },
+                containerColor = Color.White,
+                titleContentColor = DTLRed,
+                textContentColor = DTLNavy
+            )
         }
     }
 }
