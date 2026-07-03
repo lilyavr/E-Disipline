@@ -64,7 +64,9 @@ fun AdminProfileScreen(
     onLogoutClick: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
     onNavigateToMahasiswa: () -> Unit = {},
-    onNavigateToPanduan: () -> Unit = {}
+    onNavigateToPanduan: () -> Unit = {},
+    onNavigateToStatistik: () -> Unit = {},
+    onNavigateToKelolaAkun: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -145,8 +147,6 @@ fun AdminProfileScreen(
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("🧑‍💼", fontSize = 12.sp)
-                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Administrator",
                                 color = GoldAccent,
@@ -171,7 +171,7 @@ fun AdminProfileScreen(
                     icon = { Icon(Icons.Filled.Person, contentDescription = null, tint = Color(0xFF485885), modifier = Modifier.size(24.dp)) },
                     title = "Kelola Akun Admin",
                     subtitle = "Ubah data & password",
-                    onClick = { /* TODO */ }
+                    onClick = onNavigateToKelolaAkun
                 )
                 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -189,7 +189,7 @@ fun AdminProfileScreen(
                     icon = { Text("📊", fontSize = 20.sp) },
                     title = "Laporan & Statistik",
                     subtitle = "Rekap pelanggaran bulanan",
-                    onClick = { /* TODO */ }
+                    onClick = onNavigateToStatistik
                 )
                 
                 Spacer(modifier = Modifier.height(12.dp))

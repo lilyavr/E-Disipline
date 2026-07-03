@@ -226,8 +226,6 @@ fun MahasiswaLoginScreen(
 
                         // Portal Mahasiswa Subtitle
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("🎓", fontSize = 14.sp)
-                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Portal Mahasiswa",
                                 color = Color.White,

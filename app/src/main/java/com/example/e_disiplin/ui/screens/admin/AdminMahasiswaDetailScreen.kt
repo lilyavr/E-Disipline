@@ -85,7 +85,8 @@ fun AdminMahasiswaDetailScreen(
     val m = mahasiswa!!
     val verified   = pelanggaranList.filter { it.status == "Verified" }
     val pending    = pelanggaranList.filter { it.status == "Pending" }
-    val totalPoin  = m.totalPoin
+    // Compute totalPoin live from Verified pelanggaran (real-time from Firebase)
+    val totalPoin  = verified.sumOf { it.poin }
     val poinColor  = when {
         totalPoin == 0  -> DTLGreen
         totalPoin < 30  -> DTLGold
@@ -186,17 +187,13 @@ fun AdminMahasiswaDetailScreen(
                                 .background(poinColor.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
                                 .padding(horizontal = 18.dp, vertical = 8.dp)
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("⚡", fontSize = 14.sp)
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = if (totalPoin == 0) "0 Poin • Status Baik"
-                                           else "$totalPoin Poin Pelanggaran",
-                                    color = poinColor,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                            Text(
+                                text = if (totalPoin == 0) "0 Poin • Status Baik"
+                                       else "$totalPoin Poin Pelanggaran",
+                                color = poinColor,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))

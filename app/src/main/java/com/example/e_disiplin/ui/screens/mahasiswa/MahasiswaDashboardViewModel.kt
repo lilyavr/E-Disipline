@@ -10,6 +10,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel responsible for managing the data shown on the Mahasiswa (Student) portal.
+ * This includes fetching the student's profile, calculating their total points,
+ * and maintaining lists of both verified and pending violations.
+ *
+ * It listens to real-time updates via [FirebaseRepository] to keep the UI in sync.
+ */
 class MahasiswaDashboardViewModel : ViewModel() {
     private val repository = FirebaseRepository()
 

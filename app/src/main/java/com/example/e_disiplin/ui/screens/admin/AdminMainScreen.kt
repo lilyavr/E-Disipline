@@ -77,11 +77,14 @@ fun AdminMainScreen(
                 AdminDataScreen()
             }
             composable("kategori") {
-                AdminKategoriScreen()
+                AdminKategoriScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
             composable("pengaturan_sistem") {
                 AdminSettingsScreen(
-                    onNavigateToKategori = { navController.navigate("kategori") }
+                    onNavigateToKategori = { navController.navigate("kategori") },
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             composable("notifikasi") {
@@ -92,7 +95,19 @@ fun AdminMainScreen(
                     onLogoutClick = onLogoutClick,
                     onNavigateToSettings = { navController.navigate("pengaturan_sistem") },
                     onNavigateToMahasiswa = { navController.navigate("daftar_mahasiswa") },
-                    onNavigateToPanduan = { navController.navigate("panduan") }
+                    onNavigateToPanduan = { navController.navigate("panduan") },
+                    onNavigateToStatistik = { navController.navigate("laporan_statistik") },
+                    onNavigateToKelolaAkun = { navController.navigate("kelola_akun") }
+                )
+            }
+            composable("laporan_statistik") {
+                AdminStatistikScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable("kelola_akun") {
+                AdminKelolaAkunScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             composable("panduan") {

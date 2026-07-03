@@ -18,6 +18,13 @@ sealed class AddMahasiswaState {
     data class Error(val message: String) : AddMahasiswaState()
 }
 
+/**
+ * ViewModel responsible for managing Mahasiswa (Student) data from the Admin's perspective.
+ * This includes fetching the total count, listing all students, adding new students,
+ * and viewing a specific student's violation history.
+ *
+ * It listens to real-time updates from [FirebaseRepository] to keep the UI synchronized.
+ */
 class AdminMahasiswaViewModel : ViewModel() {
     private val repository = FirebaseRepository()
 
@@ -119,6 +126,9 @@ class AdminMahasiswaViewModel : ViewModel() {
                 .catch { e -> e.printStackTrace() }
                 .collect { list ->
                     _selectedMahasiswaPelanggaran.value = list
+                    // Keep totalPoin on the selected mahasiswa in sync with live Firebase data
+                    val livePoin = list.filter { it.status == "Verified" }.sumOf { it.poin }
+                    _selectedMahasiswa.value = _selectedMahasiswa.value?.copy(totalPoin = livePoin)
                 }
         }
     }

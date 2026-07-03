@@ -27,7 +27,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -272,8 +271,7 @@ fun AdminDashboardScreen(
                 ) {
                     GridCard(
                         modifier = Modifier.fillMaxWidth(),
-                        icon = Icons.Filled.Person,
-                        iconTint = TextNavy,
+                        icon = null,
                         iconBgColor = Color(0xFFF3F3F6),
                         number = totalMahasiswa.toString(),
                         numberColor = TextNavy,
@@ -440,7 +438,7 @@ fun SummaryCard(modifier: Modifier = Modifier, number: String, numberColor: Colo
 @Composable
 fun GridCard(
     modifier: Modifier = Modifier,
-    icon: ImageVector,
+    icon: ImageVector? = null,
     iconTint: Color = Color.Black,
     iconBgColor: Color,
     number: String,
@@ -457,22 +455,23 @@ fun GridCard(
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(iconBgColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = label,
-                    tint = iconTint,
-                    modifier = Modifier.size(20.dp)
-                )
+            if (icon != null) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(iconBgColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = label,
+                        tint = iconTint,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
             }
-            
-            Spacer(modifier = Modifier.height(16.dp))
             
             Text(
                 text = number,

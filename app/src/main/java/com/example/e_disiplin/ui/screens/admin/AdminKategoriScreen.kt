@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
@@ -78,7 +79,10 @@ private val RedTagBg = Color(0xFFFCE8E8)
 private val RedTagText = Color(0xFFE95B5B)
 
 @Composable
-fun AdminKategoriScreen(viewModel: AdminKategoriViewModel = viewModel()) {
+fun AdminKategoriScreen(
+    viewModel: AdminKategoriViewModel = viewModel(),
+    onNavigateBack: () -> Unit = {}
+) {
     val kategoriList by viewModel.kategoriList.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
@@ -103,19 +107,33 @@ fun AdminKategoriScreen(viewModel: AdminKategoriViewModel = viewModel()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 24.dp)
+                        .padding(horizontal = 8.dp, vertical = 16.dp)
                 ) {
-                    Text(
-                        text = "Kategori Pelanggaran",
-                        color = TextNavy,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    // Back button row
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Kembali",
+                                tint = TextNavy
+                            )
+                        }
+                        Text(
+                            text = "Kategori Pelanggaran",
+                            color = TextNavy,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Kelola daftar kategori dan poin pelanggaran",
                         color = TextGray,
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(start = 16.dp)
                     )
                 }
 
@@ -292,7 +310,7 @@ fun AddKategoriDialog(
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .menuAnchor(),
+                            .menuAnchor(), // @Suppress deprecated — requires BOM 2024.10+
                         shape = RoundedCornerShape(12.dp)
                     )
                     

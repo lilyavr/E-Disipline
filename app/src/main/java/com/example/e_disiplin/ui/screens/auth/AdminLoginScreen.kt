@@ -103,22 +103,25 @@ fun AdminLoginScreen(
 
     LaunchedEffect(loginState) {
         if (loginState is LoginState.Success) {
+            val adminId = (loginState as LoginState.Success).adminId
             viewModel.resetState()
+            
+            // Always save adminId and role for the active session
+            val editor = sharedPrefs.edit()
+            editor.putString("adminId", adminId)
+            editor.putString("role", "admin")
+
             if (rememberMe) {
-                sharedPrefs.edit()
-                    .putBoolean("rememberMe", true)
-                    .putString("role", "admin")
-                    .putString("username", username)
-                    .putString("password", password)
-                    .apply()
+                editor.putBoolean("rememberMe", true)
+                editor.putString("username", username)
+                editor.putString("password", password)
             } else {
-                sharedPrefs.edit()
-                    .remove("rememberMe")
-                    .remove("role")
-                    .remove("username")
-                    .remove("password")
-                    .apply()
+                editor.remove("rememberMe")
+                editor.remove("username")
+                editor.remove("password")
             }
+            editor.apply()
+            
             onLoginSuccess()
         }
     }
@@ -228,8 +231,6 @@ fun AdminLoginScreen(
 
                         // Portal Admin Subtitle
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("🧑‍💼", fontSize = 14.sp)
-                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Portal Admin",
                                 color = Color.White,

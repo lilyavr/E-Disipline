@@ -21,6 +21,11 @@ class FirebaseRepository {
     private val pelanggaranCollection = db.collection("pelanggaran_mahasiswa")
 
     // Admin Operations
+    /**
+     * Retrieves an Admin document from the 'admins' collection by its ID.
+     * @param id The unique identifier of the Admin.
+     * @return The [Admin] object if found, or null otherwise.
+     */
     suspend fun getAdmin(id: String): Admin? {
         return try {
             val document = adminCollection.document(id).get().await()
@@ -35,6 +40,12 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Adds a new Admin document to the 'admins' collection.
+     * If the ID is empty, a new unique document ID will be generated.
+     * @param admin The [Admin] object to insert.
+     * @return True if the operation was successful, false otherwise.
+     */
     suspend fun addAdmin(admin: Admin): Boolean {
         return try {
             val id = admin.id.ifEmpty { adminCollection.document().id }
@@ -47,14 +58,39 @@ class FirebaseRepository {
         }
     }
 
-    suspend fun loginAdmin(username: String, password: String): Boolean {
+    /**
+     * Authenticates an admin by querying the collection for a matching username and password.
+     * @param username The username of the Admin.
+     * @param password The raw password of the Admin.
+     * @return The authenticated [Admin] object if credentials match, or null otherwise.
+     */
+    suspend fun loginAdmin(username: String, password: String): Admin? {
         return try {
             val querySnapshot = adminCollection
                 .whereEqualTo("username", username)
                 .whereEqualTo("password", password)
                 .get()
                 .await()
-            !querySnapshot.isEmpty
+            if (!querySnapshot.isEmpty) {
+                querySnapshot.documents.first().toObject(Admin::class.java)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    /**
+     * Updates an existing Admin document in the 'admins' collection.
+     * @param admin The [Admin] object containing updated fields.
+     * @return True if the update was successful, false otherwise.
+     */
+    suspend fun updateAdmin(admin: Admin): Boolean {
+        return try {
+            adminCollection.document(admin.id).set(admin).await()
+            true
         } catch (e: Exception) {
             e.printStackTrace()
             false
@@ -62,6 +98,11 @@ class FirebaseRepository {
     }
 
     // Mahasiswa Operations
+    /**
+     * Retrieves a Mahasiswa document from the 'mahasiswa' collection by their NIM.
+     * @param nim The unique student identifier.
+     * @return The [Mahasiswa] object if found, or null otherwise.
+     */
     suspend fun getMahasiswa(nim: String): Mahasiswa? {
         return try {
             val document = mahasiswaCollection.document(nim).get().await()
@@ -76,6 +117,12 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Authenticates a Mahasiswa by checking if the NIM and password match an existing record.
+     * @param nim The student's NIM.
+     * @param password The student's hashed or raw password (depending on implementation).
+     * @return True if credentials are valid, false otherwise.
+     */
     suspend fun loginMahasiswa(nim: String, password: String): Boolean {
         return try {
             val querySnapshot = mahasiswaCollection
@@ -90,6 +137,11 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Adds a new Mahasiswa to the database, using their NIM as the document ID.
+     * @param mahasiswa The [Mahasiswa] object to insert.
+     * @return True if the operation was successful, false otherwise.
+     */
     suspend fun addMahasiswa(mahasiswa: Mahasiswa): Boolean {
         return try {
             // Using NIM as the document ID for Mahasiswa
@@ -101,6 +153,10 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Retrieves all violation categories (Kategori Pelanggaran) from Firestore.
+     * @return A list of [KategoriPelanggaran] objects, or an empty list if an error occurs.
+     */
     suspend fun getKategoriList(): List<KategoriPelanggaran> {
         return try {
             val snapshot = kategoriCollection.get().await()
@@ -111,6 +167,11 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Creates a new violation category in the 'kategori_pelanggaran' collection.
+     * @param kategori The [KategoriPelanggaran] object to insert.
+     * @return True if the creation was successful, false otherwise.
+     */
     suspend fun addKategori(kategori: KategoriPelanggaran): Boolean {
         return try {
             val docRef = kategoriCollection.document()
@@ -123,6 +184,11 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Deletes a specific violation category from Firestore by its ID.
+     * @param id The unique identifier of the category to delete.
+     * @return True if deletion was successful, false otherwise.
+     */
     suspend fun deleteKategori(id: String): Boolean {
         return try {
             kategoriCollection.document(id).delete().await()
@@ -133,6 +199,12 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Records a new violation (Pelanggaran) for a Mahasiswa.
+     * This operation runs in a Firestore Transaction to ensure the student's total points are safely updated alongside the violation insertion.
+     * @param pelanggaran The [Pelanggaran] object to record.
+     * @return True if the transaction succeeds, false otherwise.
+     */
     suspend fun addPelanggaran(pelanggaran: Pelanggaran): Boolean {
         return try {
             val pelanggaranRef = pelanggaranCollection.document()
@@ -160,6 +232,13 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Records a new pending violation for a Mahasiswa scanned via QR.
+     * This record is not finalized until an Admin verifies it.
+     * @param nimMahasiswa The NIM of the student.
+     * @param jenisQr The type of QR scanned (e.g., "QR_KETERLAMBATAN", "QR_UMUM").
+     * @return The newly created [Pelanggaran] object, or null on error.
+     */
     suspend fun addPendingPelanggaran(nimMahasiswa: String, jenisQr: String): Pelanggaran? {
         return try {
             val kategoriName = when (jenisQr) {
@@ -188,6 +267,17 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Verifies a pending violation, finalizing its category, points, and severity level.
+     * It updates the violation status to "Verified" and adds the points to the Mahasiswa's total.
+     * @param pelanggaranId The ID of the pending violation.
+     * @param nimMahasiswa The student's NIM.
+     * @param kategoriId The finalized category ID.
+     * @param kategoriName The finalized category name.
+     * @param tingkat The severity level (e.g., "Ringan").
+     * @param poin The point penalty to apply.
+     * @return True if verification and point updates succeeded, false otherwise.
+     */
     suspend fun verifyPelanggaran(pelanggaranId: String, nimMahasiswa: String, kategoriId: String, kategoriName: String, tingkat: String, poin: Int): Boolean {
         return try {
             // Update Pelanggaran status
@@ -214,6 +304,11 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Provides a real-time stream (Flow) of all violations currently marked as "Pending".
+     * Used by the Admin notification screen.
+     * @return A Flow emitting lists of pending [Pelanggaran].
+     */
     fun getPendingPelanggaranFlow(): Flow<List<Pelanggaran>> = callbackFlow {
         val listener = pelanggaranCollection
             .whereEqualTo("status", "Pending")
@@ -234,6 +329,11 @@ class FirebaseRepository {
         awaitClose { listener.remove() }
     }
 
+    /**
+     * Provides a real-time stream (Flow) of all violations across all students.
+     * Used for system-wide statistics and dashboards.
+     * @return A Flow emitting lists of all [Pelanggaran].
+     */
     fun getAllPelanggaranFlow(): Flow<List<Pelanggaran>> = callbackFlow {
         val listener = pelanggaranCollection
             .addSnapshotListener { snapshot, e ->
@@ -253,6 +353,11 @@ class FirebaseRepository {
         awaitClose { listener.remove() }
     }
 
+    /**
+     * Gets the total count of Mahasiswa registered in the system.
+     * Uses Firestore's optimized Aggregate query to avoid downloading all documents.
+     * @return The total count, or 0 if an error occurs.
+     */
     suspend fun getTotalMahasiswaCount(): Long {
         return try {
             val snapshot = mahasiswaCollection.count().get(AggregateSource.SERVER).await()
@@ -263,6 +368,10 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Provides a real-time stream of all Mahasiswa, ordered by NIM.
+     * @return A Flow emitting lists of [Mahasiswa].
+     */
     fun getAllMahasiswaFlow(): Flow<List<Mahasiswa>> = callbackFlow {
         val listener = mahasiswaCollection
             .orderBy("nim")
@@ -281,6 +390,11 @@ class FirebaseRepository {
         awaitClose { listener.remove() }
     }
 
+    /**
+     * Provides a real-time stream of violations committed by a specific student.
+     * @param nim The student's NIM.
+     * @return A Flow emitting lists of [Pelanggaran] tied to the student, sorted by latest date.
+     */
     fun getPelanggaranByNimFlow(nim: String): Flow<List<Pelanggaran>> = callbackFlow {
         val listener = pelanggaranCollection
             .whereEqualTo("nimMahasiswa", nim)
@@ -301,6 +415,13 @@ class FirebaseRepository {
     
     // --- Forgot Password Methods ---
     
+    /**
+     * Verifies if the provided NIM and Date of Birth match an existing student record.
+     * Used in the forgot password flow for Mahasiswa.
+     * @param nim The student's NIM.
+     * @param tanggalLahir The student's Date of Birth (format: DD-MM-YYYY).
+     * @return True if a matching record is found, false otherwise.
+     */
     suspend fun verifyMahasiswaForReset(nim: String, tanggalLahir: String): Boolean {
         return try {
             val querySnapshot = mahasiswaCollection
@@ -315,6 +436,13 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Verifies if the provided Username and Email match an existing admin record.
+     * Used in the forgot password flow for Admins.
+     * @param username The Admin's username.
+     * @param email The Admin's registered email.
+     * @return True if a matching record is found, false otherwise.
+     */
     suspend fun verifyAdminForReset(username: String, email: String): Boolean {
         return try {
             val querySnapshot = adminCollection
@@ -329,6 +457,12 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Resets a Mahasiswa's password.
+     * @param nim The student's NIM.
+     * @param newPasswordHash The new hashed password to be saved.
+     * @return True if the password was successfully updated, false otherwise.
+     */
     suspend fun resetMahasiswaPassword(nim: String, newPasswordHash: String): Boolean {
         return try {
             mahasiswaCollection.document(nim).update("password", newPasswordHash).await()
@@ -339,6 +473,12 @@ class FirebaseRepository {
         }
     }
 
+    /**
+     * Resets an Admin's password.
+     * @param username The Admin's username used to locate the document.
+     * @param newPasswordHash The new raw or hashed password to be saved.
+     * @return True if the password was successfully updated, false otherwise.
+     */
     suspend fun resetAdminPassword(username: String, newPasswordHash: String): Boolean {
         return try {
             val querySnapshot = adminCollection

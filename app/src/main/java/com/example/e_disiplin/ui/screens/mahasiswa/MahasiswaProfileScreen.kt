@@ -152,8 +152,6 @@ fun MahasiswaProfileScreen(onLogoutClick: () -> Unit = {}, onNavigatePanduan: ()
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("🎓", fontSize = 12.sp)
-                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Mahasiswa Aktif",
                                 color = GoldAccent,

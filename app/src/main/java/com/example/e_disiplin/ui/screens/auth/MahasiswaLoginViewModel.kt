@@ -7,12 +7,24 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel managing the state and logic for the Mahasiswa Login screen.
+ * It interfaces with the [FirebaseRepository] to authenticate student credentials.
+ */
 class MahasiswaLoginViewModel : ViewModel() {
     private val repository = FirebaseRepository()
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState
 
+    /**
+     * Attempts to log in the student using their NIM and raw password.
+     * The password is first hashed using SHA-256 before verification.
+     * Updates [loginState] based on the result.
+     *
+     * @param nim The student's NIM.
+     * @param password The entered raw password.
+     */
     fun login(nim: String, password: String) {
         if (nim.isBlank() || password.isBlank()) {
             _loginState.value = LoginState.Error("NIM and Password cannot be empty")
@@ -25,7 +37,7 @@ class MahasiswaLoginViewModel : ViewModel() {
             val hashedPassword = hashSha256(password)
             val success = repository.loginMahasiswa(nim, hashedPassword)
             if (success) {
-                _loginState.value = LoginState.Success
+                _loginState.value = LoginState.Success(nim)
             } else {
                 _loginState.value = LoginState.Error("Invalid NIM or password")
             }
