@@ -26,6 +26,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +55,8 @@ fun MahasiswaScanReportScreen(
     mahasiswaName: String,
     nim: String,
     waktu: String,
+    status: String,
+    poin: Int,
     onNavigateBack: () -> Unit
 ) {
     Box(
@@ -116,33 +121,48 @@ fun MahasiswaScanReportScreen(
                     
                     Spacer(modifier = Modifier.height(32.dp))
                     
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(32.dp),
-                        color = TextNavy,
-                        strokeWidth = 3.dp
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text(
-                        text = "Menunggu Verifikasi Admin...",
-                        color = TextGray,
-                        fontSize = 14.sp
-                    )
+                    if (status == "Pending") {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(32.dp),
+                            color = TextNavy,
+                            strokeWidth = 3.dp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Menunggu Verifikasi Admin...",
+                            color = TextGray,
+                            fontSize = 14.sp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.CheckCircle,
+                            contentDescription = "Verified",
+                            tint = Color(0xFF4CAF50),
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Pelanggaran Telah Diverifikasi",
+                            color = Color(0xFF4CAF50),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
             
             Spacer(modifier = Modifier.height(32.dp))
             
             // Status Badge
+            val isVerified = status == "Verified"
             Box(
                 modifier = Modifier
-                    .background(YellowBadgeBg, RoundedCornerShape(24.dp))
+                    .background(if (isVerified) Color(0xFFE8F5E9) else YellowBadgeBg, RoundedCornerShape(24.dp))
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = "MENUNGGU VERIFIKASI",
-                    color = YellowBadgeText,
+                    text = if (isVerified) "TERVERIFIKASI (+${poin} POIN)" else "MENUNGGU VERIFIKASI",
+                    color = if (isVerified) Color(0xFF4CAF50) else YellowBadgeText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -151,7 +171,7 @@ fun MahasiswaScanReportScreen(
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "Data pelanggaran sedang diverifikasi oleh Admin. Mohon tunggu status berikutnya.",
+                text = if (isVerified) "Admin telah menyetujui pelanggaran ini. Poin kedisiplinan Anda telah diperbarui." else "Data pelanggaran sedang diverifikasi oleh Admin. Mohon tunggu status berikutnya.",
                 color = TextGray,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -218,6 +238,8 @@ fun PreviewMahasiswaScanReportKeterlambatan() {
         mahasiswaName = "Andi Pratama",
         nim = "2021133001",
         waktu = "02 Jul 2026 | 08:15 WIB",
+        status = "Pending",
+        poin = 0,
         onNavigateBack = {}
     )
 }
@@ -231,6 +253,8 @@ fun PreviewMahasiswaScanReportUmum() {
         mahasiswaName = "Citra Dewi",
         nim = "2021133003",
         waktu = "02 Jul 2026 | 10:30 WIB",
+        status = "Verified",
+        poin = 10,
         onNavigateBack = {}
     )
 }

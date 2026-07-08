@@ -241,10 +241,45 @@ class FirebaseRepository {
      */
     suspend fun addPendingPelanggaran(nimMahasiswa: String, jenisQr: String): Pelanggaran? {
         return try {
-            val kategoriName = when (jenisQr) {
-                "QR_KETERLAMBATAN" -> "Telat Masuk Kelas"
-                "QR_UMUM" -> "Pelanggaran Umum"
-                else -> "Pelanggaran Tidak Diketahui"
+            var kategoriName = "Pelanggaran Tidak Diketahui"
+            var status = "Pending"
+            var poin = 0
+            var tingkat = ""
+
+            if (jenisQr.startsWith("QR_KETERLAMBATAN")) {
+                kategoriName = "Telat Masuk Kelas"
+                status = "Verified"
+                tingkat = "Ringan"
+                
+                // Coba ekstrak jam masuk dari QR (contoh: QR_KETERLAMBATAN_18:30)
+                val parts = jenisQr.split("_")
+                val timeStr = if (parts.size >= 3) parts[2] else "18:30"
+                
+                var classHour = 18
+                var classMin = 30
+                try {
+                    val timeParts = timeStr.split(":")
+                    if (timeParts.size == 2) {
+                        classHour = timeParts[0].toInt()
+                        classMin = timeParts[1].toInt()
+                    }
+                } catch (e: Exception) {}
+                
+                val classTime = java.util.Calendar.getInstance().apply {
+                    set(java.util.Calendar.HOUR_OF_DAY, classHour)
+                    set(java.util.Calendar.MINUTE, classMin)
+                    set(java.util.Calendar.SECOND, 0)
+                }.timeInMillis
+                
+                val lateMinutes = ((System.currentTimeMillis() - classTime) / 60000).toInt()
+                
+                poin = when {
+                    lateMinutes <= 15 -> 1
+                    lateMinutes <= 30 -> 2
+                    else -> 3
+                }
+            } else if (jenisQr == "QR_UMUM") {
+                kategoriName = "Pelanggaran Umum"
             }
 
             val pelanggaranRef = pelanggaranCollection.document()
@@ -253,9 +288,9 @@ class FirebaseRepository {
                 nimMahasiswa = nimMahasiswa,
                 kategoriId = "",
                 kategoriName = kategoriName,
-                tingkat = "",
-                poin = 0,
-                status = "Pending",
+                tingkat = tingkat,
+                poin = poin,
+                status = status,
                 tanggal = System.currentTimeMillis()
             )
 

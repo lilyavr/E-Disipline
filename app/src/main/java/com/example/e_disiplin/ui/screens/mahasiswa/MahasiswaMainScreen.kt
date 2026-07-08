@@ -149,7 +149,11 @@ fun MahasiswaMainScreen(
                 )
             }
             composable("scan_report") {
-                val pelanggaran = viewModel.lastScannedPelanggaran.collectAsState().value
+                val lastScanned = viewModel.lastScannedPelanggaran.collectAsState().value
+                val allPelanggaran = viewModel.allPelanggaran.collectAsState().value
+                // Get real-time updates for the scanned violation if it exists in the main feed
+                val pelanggaran = allPelanggaran.find { it.id == lastScanned?.id } ?: lastScanned
+                
                 val mahasiswa = viewModel.mahasiswa.collectAsState().value
                 
                 if (pelanggaran != null && mahasiswa != null) {
@@ -162,6 +166,8 @@ fun MahasiswaMainScreen(
                         mahasiswaName = mahasiswa.name,
                         nim = mahasiswa.nim,
                         waktu = waktu,
+                        status = pelanggaran.status,
+                        poin = pelanggaran.poin,
                         onNavigateBack = {
                             navController.popBackStack("beranda", false)
                         }
